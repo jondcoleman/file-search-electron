@@ -1,0 +1,47 @@
+{
+  "name": "file-search-electron",
+  "version": "0.1.0",
+  "description": "A Electron app for indexing and searching files.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Jonathan Coleman",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.5.2",
+    "babel-loader": "^6.2.3",
+    "babel-plugin-transform-class-properties": "^6.5.2",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-react-jsx": "^6.5.2",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-0": "^6.5.0",
+    "css-loader": "^0.23.1",
+    "electron-rebuild": "^1.2.0",
+    "extract-text-webpack-plugin": "^0.9.1",
+    "gh-pages": "^0.10.0",
+    "http-server": "^0.9.0",
+    "json-loader": "^0.5.4",
+    "mkdirp": "^0.5.1",
+    "ncp": "^2.0.0",
+    "style-loader": "^0.13.0",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1",
+    "webpack-target-electron-renderer": "^0.4.0"
+  },
+  "dependencies": {
+    "decko": "^1.1.3",
+    "dexie": "^1.4.1",
+    "electron-prebuilt": "^1.2.0",
+    "jsonfile": "^2.3.1",
+    "preact": "^4.0.1",
+    "preact-router": "^1.2.4",
+    "react": "^15.3.1",
+    "react-dom": "^15.3.1",
+    "velocity-react": "^1.1.5",
+    "walker": "^1.0.7",
+    "wingcss": "^0.1.5"
+  }
+}
