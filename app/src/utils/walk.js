@@ -5,8 +5,8 @@ const path = require('path')
 export default function(fnEntry, fnErr, fnEnd) {
   getConfig((config) => {
 
-    const indexPaths = config.indexPaths
-    const filterPaths = config.ignoredPaths.map(str => path.normalize(str))
+    const indexPaths = config.indexPaths.map(x => path.normalize(x.path))
+    const filterPaths = config.ignoredPaths.map(x => path.normalize(x.path))
 
     const files = []
     const start = new Date()
@@ -25,7 +25,6 @@ export default function(fnEntry, fnErr, fnEnd) {
       walker(path)
         .filterDir((dir, stat) => {
           if (filterPaths.indexOf(dir) >= 0) {
-            console.log('skipping', dir, stat)
             return false
           }
           return true
@@ -40,7 +39,6 @@ export default function(fnEntry, fnErr, fnEnd) {
         })
         .on('error', (err, entry, stat) => {
           if (fnErr) fnErr(err, entry, stat)
-          console.log('Got error ' + err + ' on entry ' + entry)
         })
         .on('end', () => {
           handlePathDone()

@@ -1,9 +1,10 @@
 import React from 'react'
 import moment from 'moment'
+import {shell} from 'electron'
 
 export default (props) => (
   <tr>
-    <td><button onClick={props.handleClick}>Open</button></td>
+    <td><button onClick={() => shell.openItem(props.file)}>Open</button></td>
     <td>
       {props.fileName}
       <br></br>

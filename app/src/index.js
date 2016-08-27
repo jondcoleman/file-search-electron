@@ -1,7 +1,7 @@
 import path from 'path'
 import {render} from 'react-dom'
 import React, {Component} from 'react'
-import {shell, remote} from 'electron'
+import {remote} from 'electron'
 import {VelocityTransitionGroup, VelocityComponent} from 'velocity-react'
 
 // helpers and utils
@@ -13,11 +13,12 @@ import setConfig from './utils/setConfig'
 // components
 import Spinner from './components/Spinner'
 import SearchForm from './components/SearchForm'
-import ResultItem from './components/ResultItem'
+import ResultList from './components/ResultList'
 import ListItemDeletable from './components/ListItemDeletable'
 
 // electron file open dialog
 const dialog = remote.dialog
+const app = remote.app
 
 class App extends Component {
   constructor() {
@@ -36,7 +37,7 @@ class App extends Component {
       msg: null,
       err: '',
       searchValue: '',
-      queryResults: [],
+      queryResults: null,
       config: {
         indexPaths: [],
         ignoredPaths: []
@@ -55,10 +56,11 @@ class App extends Component {
           <div className="col-6">
             <h3>Paths to Index</h3>
             <div>
-              {this.state.config.indexPaths.map((path, i) => (
+              {this.state.config.indexPaths.map((x, i) => (
                 <ListItemDeletable
                   key={i}
-                  text={path}
+                  dbkey={x.id}
+                  text={x.path}
                   pathType="index"
                   handleClick={this.handleRemovePath}
                 />
@@ -68,10 +70,11 @@ class App extends Component {
           <div className="col-6">
             <h3>Paths to Ignore</h3>
             <div>
-              {this.state.config.ignoredPaths.map((path, i) => (
+              {this.state.config.ignoredPaths.map((x, i) => (
                 <ListItemDeletable
                   key={i}
-                  text={path}
+                  text={x.path}
+                  dbkey={x.id}
                   pathType="ignored"
                   handleClick={this.handleRemovePath}
                 />
@@ -112,21 +115,7 @@ class App extends Component {
           />
         </div>
         <div className="row">
-          <table>
-            <tbody>
-              <tr>
-                <th></th>
-                <th>File Name</th>
-                <th>Date Created</th>
-                <th>Date Modified</th>
-              </tr>
-            {this.state.queryResults.map((result, i) => {
-              const props = result
-              props.handleClick = () => shell.openItem(result.file)
-              return <ResultItem {...props} key={i}/>})
-            }
-            </tbody>
-          </table>
+        <ResultList files={this.state.queryResults}/>
         </div>
       </div>
     )
@@ -151,7 +140,6 @@ class App extends Component {
         .toCollection()
         .delete()
         .then(() => db.files.bulkAdd(toInsert))
-        .then(() => db.files.count((num) => console.log(num)))
       this.setState({
         currentFile: '',
         spin: false,
@@ -197,10 +185,10 @@ class App extends Component {
     })
   }
 
-  handleRemovePath(e, pathType, path) {
+  handleRemovePath(e, pathType, key) {
     e.preventDefault()
-    const method = pathType === 'index' ? setConfig.removeIndexPath : setConfig.removeIgnoredrPath
-    method(path, () => {
+    const method = pathType === 'index' ? setConfig.removeIndexPath : setConfig.removeIgnoredPath
+    method(key, () => {
       this.updateConfig()
     })
   }

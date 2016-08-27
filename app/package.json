@@ -1,0 +1,17 @@
+{
+  "name": "file-search-electron",
+  "version": "0.1.0",
+  "description": "A Electron app for indexing and searching files.",
+  "main": "main.js",
+  "author": "Jonathan Coleman",
+  "license": "MIT",
+  "dependencies": {
+    "dexie": "^1.4.1",
+    "jsonfile": "^2.3.1",
+    "moment": "^2.14.1",
+    "react": "^15.3.1",
+    "react-dom": "^15.3.1",
+    "velocity-react": "^1.1.5",
+    "walker": "^1.0.7"
+  }
+}

@@ -1,16 +1,12 @@
 module.exports = {
-	entry: './src/index.js',
-	output: { path:'./build', filename:'index.js' },
+	entry: './app/src/index.js',
+	output: { path:'./app/dist', filename:'index.js' },
 	module: {
 		loaders: [
 			{
 				test: /\.jsx?$/,
 				exclude: /node_modules/,
 				loader: 'babel'
-			},
-			{
-				test: /\.json$/,
-				loader: 'json'
 			}
 		]
 	},
