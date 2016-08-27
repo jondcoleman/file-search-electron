@@ -10,6 +10,10 @@ import getConfig from './utils/getConfig'
 import setConfig from './utils/setConfig'
 const dialog = remote.dialog
 import {VelocityTransitionGroup, VelocityComponent} from 'velocity-react'
+import ListItemDeletable from './components/ListItemDeletable'
+import ResultItem from './components/ResultItem'
+import path from 'path'
+import Spinner from './components/Spinner'
 
 class App extends Component {
   constructor() {
@@ -19,18 +23,21 @@ class App extends Component {
     this.handleSearchValueChange = this.handleSearchValueChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleAddPath = this.handleAddPath.bind(this)
+    this.handleRemovePath = this.handleRemovePath.bind(this)
     this.updateConfig = this.updateConfig.bind(this) 
 
     this.state = {
       currentFile: '',
       indexCount: 0,
       msg: null,
+      err: '',
       searchValue: '',
       queryResults: [],
       config: {
         indexPaths: [],
         ignoredPaths: []
-      }
+      },
+      spin: false
     }
   }
   componentWillMount(){
@@ -43,15 +50,29 @@ class App extends Component {
         <div className="row">
           <div className="col-6">
             <h3>Paths to Index</h3>
-            <ul>
-              {this.state.config.indexPaths.map((path, i) => <li key={i}>{path}</li>)}
-            </ul>
+            <div>
+              {this.state.config.indexPaths.map((path, i) => (
+                <ListItemDeletable
+                  key={i}
+                  text={path}
+                  pathType="index"
+                  handleClick={this.handleRemovePath}
+                />
+                ))}
+            </div>
           </div>
           <div className="col-6">
             <h3>Paths to Ignore</h3>
-            <ul>
-              {this.state.config.ignoredPaths.map((path, i) => <li key={i}>{path}</li>)}
-            </ul>
+            <div>
+              {this.state.config.ignoredPaths.map((path, i) => (
+                <ListItemDeletable
+                  key={i}
+                  text={path}
+                  pathType="ignored"
+                  handleClick={this.handleRemovePath}
+                />
+                ))}
+            </div>
           </div>
         </div>
         <div className="row">
@@ -60,15 +81,19 @@ class App extends Component {
           </div>
           <div className="col-6">
             <button className="btn btn-outline-inverted" onClick={e => this.handleAddPath(e, 'ignored')}>Add Path</button>
-            <button id="rebuild-index" onClick={this.index} >Rebuild Index</button>
+            <button id="rebuild-index" className="pull-right" onClick={this.index} >Rebuild Index</button>
           </div>
         </div>
         <br/>
         <hr/>
+        <Spinner spin={this.state.spin} />
         <div className="row">
           <p>{this.state.currentFile}</p>
           <VelocityTransitionGroup enter={{animation: "slideDown"}} leave={{animation: "slideUp"}}>
             {this.state.msg ? <p key={1}>{this.state.msg}</p> : null}
+          </VelocityTransitionGroup>
+          <VelocityTransitionGroup enter={{animation: "slideDown"}} leave={{animation: "slideUp"}}>
+            {this.state.err.length > 0 ? <pre className="err-msg" key={1}>{this.state.err}</pre> : null}
           </VelocityTransitionGroup>
           <SearchForm
             searchValue={this.state.searchValue}
@@ -76,28 +101,51 @@ class App extends Component {
             handleSubmit={this.handleSubmit}
             disabled={this.state.searchValue.length < 3}
           />
-          {this.state.queryResults.map((result, i) => {
-            const str = JSON.stringify(result, null, 2)
-            console.log(str)
-            return <pre key={i} onClick={() => shell.openItem(result.file)}>{str}</pre>
-          })}
+        </div>
+        <div className="row">
+          <table>
+            <tbody>
+              <tr>
+                <th></th>
+                <th>File Name</th>
+                <th>Date Created</th>
+                <th>Date Modified</th>
+              </tr>
+            {this.state.queryResults.map((result, i) => {
+              const props = result
+              props.handleClick = () => shell.openItem(result.file)
+              return <ResultItem {...props} key={i}/>})
+            }
+            </tbody>
+          </table>
         </div>
       </div>
     )
   }
 
   index() {
+    this.setState({spin: true})
     const handleEntry = (entry, stat, count) => this.setState({currentFile: entry, indexCount: count})
-    const handleError = (err, entry, stat) => this.setState({msg: err})
+    const handleError = (err, entry, stat) => {
+      const errMsg = this.state.err.length === 0 ? err.toString() : this.state.err + '\n' + err.toString()
+      this.setState({err: errMsg})
+    }
     const handleEnd = (count, elapsedTime, files) => {
+      const toInsert = files.map((x) => {
+        const parsed = path.parse(x.file)
+        x.fileName = parsed.base
+        x.path = parsed.dir
+        return x
+      })
       this.setState({msg: 'Adding to database'})
       db.files
         .toCollection()
         .delete()
-        .then(() => db.files.bulkAdd(files))
+        .then(() => db.files.bulkAdd(toInsert))
         .then(() => db.files.count((num) => console.log(num)))
       this.setState({
         currentFile: '',
+        spin: false,
         msg: `Found ${count} entries.  Indexing took ${elapsedTime} minutes`
       })
       setTimeout(() => this.setState({msg: null}), 2000)
@@ -116,7 +164,7 @@ class App extends Component {
     db.table('files')
       .toCollection()
       .filter(obj => {
-        if (obj.file.toLowerCase().indexOf(query) >= 0) return true
+        if (obj.fileName.toLowerCase().indexOf(query) >= 0) return true
       })
       .toArray()
       .then((data) => {
@@ -124,8 +172,6 @@ class App extends Component {
           obj.stats = JSON.parse(obj.stats)
           return obj
         })
-        console.log(result[0])
-        console.log(JSON.stringify(result[0], null, 2))
         this.setState({ queryResults: result })
       })
   }
@@ -139,6 +185,14 @@ class App extends Component {
       method(filesArr[0], () => {
         this.updateConfig()
       })
+    })
+  }
+
+  handleRemovePath(e, pathType, path) {
+    e.preventDefault()
+    const method = pathType === 'index' ? setConfig.removeIndexPath : setConfig.removeIgnoredrPath
+    method(path, () => {
+      this.updateConfig()
     })
   }
 

@@ -11,8 +11,40 @@ html {
   padding: 0px 50px 25px 50px;
 } 
 
-#rebuild-index {
-  float: right;
+#search-submit {
+  width: 90%;
+}
+
+button {
+  border: 3px solid #000;
+}
+
+input[type="submit"]:disabled, button:disabled {
+  opacity: .6;
+}
+
+.list-item-deletable {
+  font-size: .9em;
+}
+
+.delete-character {
+  color: red;
+  padding-right: 8px;
+  cursor: pointer;
+}
+
+.err-msg {
+  color: red;
+}
+
+.result-path {
+  font-size: .9em;
+  padding-left: 5px;
+}
+
+td, th {
+  padding-right: 10px;
+  padding-left: 10px;
 }
 
 .message-leave {

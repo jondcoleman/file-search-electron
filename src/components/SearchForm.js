@@ -11,7 +11,7 @@ export default (props) => (
       />
     </div>
     <div className="col-2">
-      <input type="submit" disabled={props.disabled}/>
+      <input type="submit" className="pull-right btn" id="search-submit" disabled={props.disabled}/>
     </div>
   </form>
 )

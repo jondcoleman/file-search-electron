@@ -30,7 +30,7 @@ export default function(fnEntry, fnErr, fnEnd) {
           }
           return true
         })
-        .on('entry', (entry, stat) => {
+        .on('file', (entry, stat) => {
           count++
           if (fnEntry) fnEntry(entry, stat, count)
           files.push({
