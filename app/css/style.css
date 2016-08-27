@@ -19,10 +19,6 @@ button {
   border: 3px solid #000;
 }
 
-input[type="submit"]:disabled, button:disabled {
-  opacity: .6;
-}
-
 .list-item-deletable {
   font-size: .9em;
 }
