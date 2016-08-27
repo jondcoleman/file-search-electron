@@ -1,19 +1,23 @@
-// import {h, render} from 'preact'
+import path from 'path'
+import {render} from 'react-dom'
+import React, {Component} from 'react'
+import {shell, remote} from 'electron'
+import {VelocityTransitionGroup, VelocityComponent} from 'velocity-react'
+
+// helpers and utils
 import db from './db'
 import walk from './utils/walk'
-import React, {Component} from 'react'
-import ReactCSSTransitionGroup from 'react/lib/ReactCSSTransitionGroup'
-import {render} from 'react-dom'
-import SearchForm from './components/SearchForm'
-import {shell, remote} from 'electron'
 import getConfig from './utils/getConfig'
 import setConfig from './utils/setConfig'
-const dialog = remote.dialog
-import {VelocityTransitionGroup, VelocityComponent} from 'velocity-react'
-import ListItemDeletable from './components/ListItemDeletable'
-import ResultItem from './components/ResultItem'
-import path from 'path'
+
+// components
 import Spinner from './components/Spinner'
+import SearchForm from './components/SearchForm'
+import ResultItem from './components/ResultItem'
+import ListItemDeletable from './components/ListItemDeletable'
+
+// electron file open dialog
+const dialog = remote.dialog
 
 class App extends Component {
   constructor() {
@@ -81,7 +85,12 @@ class App extends Component {
           </div>
           <div className="col-6">
             <button className="btn btn-outline-inverted" onClick={e => this.handleAddPath(e, 'ignored')}>Add Path</button>
-            <button id="rebuild-index" className="pull-right" onClick={this.index} >Rebuild Index</button>
+            <button
+              id="rebuild-index"
+              className="pull-right"
+              onClick={this.index}
+              disabled={!this.state.config.indexPaths || this.state.config.indexPaths.length < 1  }
+            >Rebuild Index</button>
           </div>
         </div>
         <br/>
@@ -148,7 +157,7 @@ class App extends Component {
         spin: false,
         msg: `Found ${count} entries.  Indexing took ${elapsedTime} minutes`
       })
-      setTimeout(() => this.setState({msg: null}), 2000)
+      setTimeout(() => this.setState({msg: null}), 3000)
     }
     walk(handleEntry, handleError, handleEnd)
   }
@@ -198,7 +207,10 @@ class App extends Component {
 
   updateConfig() {
     getConfig((config) => {
-      this.setState({ config })
+      this.setState({
+        config,
+        err: !config.indexPaths || config.indexPaths.length < 1 ? 'Error: Missing Index Path' : ''
+      })
     })
   }
 }
